@@ -19,9 +19,9 @@ import (
 // too much). To do so add unicode ZERO WIDTH SPACE symbol (%E2%80%8B) to the filename.
 // Ex: %2F%E2%80%8B.png will produce '/' symbol as well.
 type OCR struct {
-	fontFamilies map[string][]*fontSymbol
+	fontFamilies map[string][]*FontSymbol
 	threshold    float64
-	allSymbols   []*fontSymbol
+	allSymbols   []*FontSymbol
 	numThreads   int
 }
 
@@ -31,7 +31,7 @@ type OCR struct {
 // only one thread
 func NewOCR(threshold float64, numThreads ...int) *OCR {
 	ocr := &OCR{
-		fontFamilies: make(map[string][]*fontSymbol),
+		fontFamilies: make(map[string][]*FontSymbol),
 		threshold:    threshold,
 		numThreads:   1,
 	}
@@ -43,6 +43,22 @@ func NewOCR(threshold float64, numThreads ...int) *OCR {
 	return ocr
 }
 
+// Adds symbols associated to a certain font family.
+// Allows adding to an existing family (no checks are done to avoid duplicated symbols).
+func (o *OCR) AddFontFamily(name string, symbols ...*FontSymbol) {
+	family := o.fontFamilies[name]
+	family = append(family, symbols...)
+
+	o.fontFamilies[name] = family
+
+	o.AddSymbols(symbols...)
+}
+
+// Adds symbols not associated to a specific font family.
+func (o *OCR) AddSymbols(symbols ...*FontSymbol) {
+	o.allSymbols = append(o.allSymbols, symbols...)
+}
+
 // LoadFont loads a specific fontset from the given folder. Fonts are simple image files
 // containing a PNG/JPEG of the font, and named after the "letter" represented by the image.
 //
@@ -52,31 +68,14 @@ func (o *OCR) LoadFont(fontPath string) error {
 		return err
 	}
 
-	fontFamily, err := loadFont(fontPath)
+	symbols, err := loadFont(fontPath)
 	if err != nil {
 		return err
 	}
 
 	familyName := filepath.Base(fontPath)
-	family, ok := o.fontFamilies[familyName]
-	if !ok {
-		family = make([]*fontSymbol, 0, len(fontFamily))
-	}
-
-	family = append(family, fontFamily...)
-	o.fontFamilies[familyName] = family
-
-	o.updateAllSymbols()
+	o.AddFontFamily(familyName, symbols...)
 	return nil
-}
-
-func (o *OCR) updateAllSymbols() {
-	total := 0
-	o.allSymbols = nil
-	for _, family := range o.fontFamilies {
-		total += len(family)
-		o.allSymbols = append(o.allSymbols, family...)
-	}
 }
 
 // Recognize the text in the image using the fontsets previously loaded. If a SubImage

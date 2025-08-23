@@ -9,16 +9,20 @@ import (
 	"strings"
 )
 
-type fontSymbol struct {
+type FontSymbol struct {
 	symbol string
 	image  *imageBinary
 	width  int
 	height int
 }
 
-func newFontSymbol(symbol string, img image.Image) *fontSymbol {
-	imgBin := newImageBinary(img)
-	fs := &fontSymbol{
+func NewFontSymbolRune(symbol rune, img image.Image) *FontSymbol {
+	return NewFontSymbol(string([]rune{symbol}), img)
+}
+
+func NewFontSymbol(symbol string, img image.Image) *FontSymbol {
+	imgBin := newImageBinary(ensureGrayScale(img))
+	fs := &FontSymbol{
 		symbol: symbol,
 		image:  imgBin,
 		width:  imgBin.width,
@@ -28,16 +32,16 @@ func newFontSymbol(symbol string, img image.Image) *fontSymbol {
 	return fs
 }
 
-func (f *fontSymbol) String() string { return f.symbol }
+func (f *FontSymbol) String() string { return f.symbol }
 
 type fontSymbolLookup struct {
-	fs   *fontSymbol
+	fs   *FontSymbol
 	x, y int
 	g    float64
 	size int
 }
 
-func newFontSymbolLookup(fs *fontSymbol, x, y int, g float64) *fontSymbolLookup {
+func newFontSymbolLookup(fs *FontSymbol, x, y int, g float64) *fontSymbolLookup {
 	return &fontSymbolLookup{fs, x, y, g, fs.image.size}
 }
 
@@ -91,13 +95,13 @@ func (l *fontSymbolLookup) String() string {
 	return fmt.Sprintf("'%s'(%d,%d,%d)[%f]", l.fs.symbol, l.x, l.y, l.size, l.g)
 }
 
-func loadFont(path string) ([]*fontSymbol, error) {
+func loadFont(path string) ([]*FontSymbol, error) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
 
-	fonts := make([]*fontSymbol, 0)
+	fonts := make([]*FontSymbol, 0)
 	for _, f := range files {
 		if f.IsDir() || strings.HasPrefix(f.Name(), ".") {
 			continue
@@ -106,12 +110,12 @@ func loadFont(path string) ([]*fontSymbol, error) {
 		if err != nil {
 			return nil, err
 		}
-		fonts = append(fonts,fs)
+		fonts = append(fonts, fs)
 	}
 	return fonts, nil
 }
 
-func loadSymbol(path string, fileName string) (*fontSymbol, error) {
+func loadSymbol(path string, fileName string) (*FontSymbol, error) {
 	imageFile, err := os.Open(path + "/" + fileName)
 	if err != nil {
 		return nil, err
@@ -123,15 +127,16 @@ func loadSymbol(path string, fileName string) (*fontSymbol, error) {
 		return nil, err
 	}
 
-	symbolName, err := url.QueryUnescape(fileName)
+	nameWithoutExtension := strings.TrimSuffix(fileName, ".png")
+	symbolName, err := url.QueryUnescape(nameWithoutExtension)
 	if err != nil {
 		return nil, err
 	}
 
 	symbolName = strings.Replace(symbolName, "\u200b", "", -1) // Remove zero width spaces
-	fs := newFontSymbol(
-		strings.TrimSuffix(symbolName, ".png"),
-		ensureGrayScale(img),
+	fs := NewFontSymbol(
+		symbolName,
+		img,
 	)
 	return fs, nil
 }
