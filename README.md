@@ -1,8 +1,8 @@
 # Lookup
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/deluan/lookup?label=latest)](https://github.com/deluan/lookup/releases)
-[![Documentation](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat)](https://godoc.org/github.com/deluan/lookup)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/deluan/lookup/go.yml?branch=master&logo=github&style=flat-square)](https://github.com/deluan/lookup/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/deluan/lookup)](https://goreportcard.com/report/github.com/deluan/lookup)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/deluan/lookup?label=latest)](https://github.com/Schobers/lookup/releases)
+[![Documentation](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat)](https://godoc.org/github.com/Schobers/lookup)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/deluan/lookup/go.yml?branch=master&logo=github&style=flat-square)](https://github.com/Schobers/lookup/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Schobers/lookup)](https://goreportcard.com/report/github.com/Schobers/lookup)
 [![Maintainability](https://api.codeclimate.com/v1/badges/d4ff0afbc348c6b9291e/maintainability)](https://codeclimate.com/github/deluan/lookup/maintainability)
 
 
@@ -18,12 +18,12 @@ original library's ['docs'](https://gitlab.com/axet/lookup/tree/master/docs) fol
 
 Add this library to your project with:
 ```shell script
-go get github.com/deluan/lookup
+go get github.com/Schobers/lookup
 ```
 
 To learn how to use it, take a look at the example files for [Lookup](examples_lookup_test.go) and 
 [OCR](examples_ocr_test.go). All images used in the examples are available in the [testdata](testdata) folder. 
-For more details check the full [documentation](https://godoc.org/github.com/deluan/lookup).
+For more details check the full [documentation](https://godoc.org/github.com/Schobers/lookup).
 
 ### To Do:
 - ~~Add basic LookUp function~~

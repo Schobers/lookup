@@ -1,4 +1,4 @@
-module github.com/deluan/lookup
+module github.com/Schobers/lookup
 
 go 1.18
 
