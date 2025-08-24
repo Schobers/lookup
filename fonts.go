@@ -4,35 +4,62 @@ import (
 	"fmt"
 	"image"
 	"io/ioutil"
+	"math"
 	"net/url"
 	"os"
 	"strings"
 )
 
 type FontSymbol struct {
-	symbol string
-	image  *imageBinary
-	width  int
-	height int
+	symbol  string
+	image   *imageBinary
+	width   int
+	height  int
+	advance int
 }
 
-func NewFontSymbolRune(symbol rune, img image.Image) *FontSymbol {
-	return NewFontSymbol(string([]rune{symbol}), img)
+// NewFontSymbolRune creates a new symbol for a rune. opts are optional (if set to nil).
+func NewFontSymbolRune(symbol rune, img image.Image, opts *NewFontSymbolOptions) *FontSymbol {
+	return NewFontSymbolOpts(string([]rune{symbol}), img, opts)
 }
 
 func NewFontSymbol(symbol string, img image.Image) *FontSymbol {
+	return NewFontSymbolOpts(symbol, img, nil)
+}
+
+// NewFontSymbolOpts creates a new symbol for a rune. Use NewFontSymbol for using the default options.
+func NewFontSymbolOpts(symbol string, img image.Image, opts *NewFontSymbolOptions) *FontSymbol {
 	imgBin := newImageBinary(ensureGrayScale(img))
+	advance := math.MaxInt
+	if opts != nil {
+		advance = opts.Advance
+	}
 	fs := &FontSymbol{
-		symbol: symbol,
-		image:  imgBin,
-		width:  imgBin.width,
-		height: imgBin.height,
+		symbol:  symbol,
+		image:   imgBin,
+		width:   imgBin.width,
+		height:  imgBin.height,
+		advance: advance,
 	}
 
 	return fs
 }
 
+func (f FontSymbol) Advance() int {
+	if f.advance == math.MaxInt {
+		return f.width
+	}
+	return f.advance
+}
+
 func (f *FontSymbol) String() string { return f.symbol }
+
+type NewFontSymbolOptions struct {
+	// The advance of the symbol, taken into account when recognizing texts./
+	// This allows symbols to be closer/further away than the width of the symbol.
+	// Is ignored when set to math.MaxInt
+	Advance int
+}
 
 type fontSymbolLookup struct {
 	fs   *FontSymbol
@@ -46,8 +73,8 @@ func newFontSymbolLookup(fs *FontSymbol, x, y int, g float64) *fontSymbolLookup 
 }
 
 func (l *fontSymbolLookup) cross(f *fontSymbolLookup) bool {
-	r := image.Rect(l.x, l.y, l.x+l.fs.width, l.y+l.fs.height)
-	r2 := image.Rect(f.x, f.y, f.x+f.fs.width, f.y+f.fs.height)
+	r := image.Rect(l.x, l.y, l.x+l.fs.Advance(), l.y+l.fs.height)
+	r2 := image.Rect(f.x, f.y, f.x+f.fs.Advance(), f.y+f.fs.height)
 
 	return r.Intersect(r2) != image.Rectangle{}
 }

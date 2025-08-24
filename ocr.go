@@ -131,15 +131,14 @@ func (o *OCR) filterAndArrange(all []*fontSymbolLookup) string {
 
 	var str strings.Builder
 	x := all[0].x
-	cx := 0
+	previousAdvance := 0
 	for i, s := range all {
-		maxCX := max(cx, s.fs.width)
-
 		// if distance between end of previous symbol and beginning of the
 		// current is larger then a char size, then it is a space
 		// This should not be applied in the beginning (i == 0) as it would put a white space for
 		// any s.x > maxCX will have a (useless) whitespace in front
-		if s.x-x >= maxCX && i != 0 {
+		maxCurrentPreviousAdvance := max(previousAdvance, s.fs.Advance())
+		if s.x-x >= maxCurrentPreviousAdvance && i != 0 {
 			str.WriteString(" ")
 		}
 
@@ -148,8 +147,8 @@ func (o *OCR) filterAndArrange(all []*fontSymbolLookup) string {
 			str.WriteString("\n")
 		}
 
-		x = s.x + s.fs.width
-		cx = s.fs.width
+		x = s.x + s.fs.Advance()
+		previousAdvance = s.fs.Advance()
 		str.WriteString(s.fs.symbol)
 	}
 
